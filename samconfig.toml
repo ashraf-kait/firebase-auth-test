@@ -1,0 +1,13 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "firebase-auth-test"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1ohlfhx0odkuc"
+s3_prefix = "firebase-auth-test"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+disable_rollback = true
+parameter_overrides = "FirebaseProjectId=\"lambda-auth-test\""
+image_repositories = []

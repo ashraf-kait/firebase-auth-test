@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  test-app
+
+  Sample SAM Template for test-app
+
+Parameters:
+  FirebaseProjectId:
+    Type: String
+    Default: "lambda-auth-test"
+
+Resources:
+  AuthGatewayHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Auth:
+        Authorizers:
+          FirebaseAuthorizer:
+            IdentitySource: $request.header.Authorization
+            JwtConfiguration:
+              audience:
+                - !Ref FirebaseProjectId
+              issuer: !Sub https://securetoken.google.com/${FirebaseProjectId}
+        DefaultAuthorizer: FirebaseAuthorizer
+      StageName: "Prod"
+
+  AuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: access/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Architectures:
+        - x86_64
+      Events:
+        Gateway:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AuthGatewayHttpApi
+            Path: /access
+            Method: GET
+  OpenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: open/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Architectures:
+        - x86_64
+      Events:
+        Gateway:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AuthGatewayHttpApi
+            Path: /open
+            Method: GET
+            Auth:
+              Authorizer: NONE
+Outputs:
+  API:
+    Description: "API Gateway endpoint URL for the stage for Auth function"
+    Value: !Sub "https://${AuthGatewayHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/"
